@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvilPPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                EvilPPT
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" id="nav-dashboard" onclick="navigateTo('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    项目概览
+                </div>
+                <div class="nav-item" id="nav-generator" onclick="navigateTo('generator')">
+                    <span class="nav-icon">✨</span>
+                    智能生成
+                </div>
+                <div class="nav-item hidden" id="nav-preview" onclick="navigateTo('preview')">
+                    <span class="nav-icon">👁️</span>
+                    演示预览
+                </div>
+                <div class="nav-item" id="nav-settings" onclick="navigateTo('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    系统设置
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section active dashboard-view">
+                <div class="view-header">
+                    <div class="header-content">
+                        <h1 class="view-title">我的演示项目</h1>
+                        <p class="view-subtitle">管理和查看所有 OpenClaw 相关的 PPT 演示</p>
+                    </div>
+                    <button class="btn-primary" onclick="navigateTo('generator')">
+                        <span class="icon">+</span> 新建项目
+                    </button>
+                </div>
+                <div id="projectList" class="projects-grid">
+                    <!-- Projects injected by app.js -->
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view-section settings-view">
+                <div class="view-header">
+                    <h1 class="view-title">系统设置</h1>
+                </div>
+                <div class="settings-container" style="padding: 24px; max-width: 800px;">
+                    <div class="gen-panel">
+                        <div class="form-group">
+                            <label>OpenAI API Key</label>
+                            <input type="password" id="setting-apiKey" placeholder="sk-..." autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>Base URL</label>
+                            <input type="text" id="setting-baseUrl" placeholder="https://api.openai.com/v1">
+                        </div>
+                        <div class="form-group">
+                            <label>模型选择 (Model)</label>
+                            <select id="setting-modelSelect" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; width: 100%; margin-bottom: 8px;">
+                                <option value="gpt-5.4">gpt-5.4</option>
+                                <option value="gemini-3-pro-preview">gemini-3-pro-preview</option>
+                                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                                <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+                                <option value="custom">自定义模型...</option>
+                            </select>
+                            <input type="text" id="setting-customModelInput" class="hidden" placeholder="输入模型名称，如 gpt-4-turbo" style="width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <button id="setting-testConnectBtn" class="btn-secondary" style="width: 100%; padding: 8px;">🔌 测试连通性</button>
+                            <div id="setting-connectStatus" style="font-size: 13px; margin-top: 8px; display: none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>系统提示词 (System Prompt)</label>
+                            <textarea id="setting-systemPrompt" rows="6"></textarea>
+                        </div>
+                        <div class="divider"></div>
+                        <button id="saveSettingsBtn" class="btn-primary">💾 保存配置</button>
+                        <span id="settingsStatus" style="margin-left: 10px; color: var(--success-color);"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide Preview View -->
+            <div id="view-preview" class="view-section slide-view">
+                <div class="preview-sidebar">
+                    <div class="sidebar-info">
+                        <h2 id="project-name">Project Name</h2>
+                        <button id="open-folder-btn" class="btn-secondary" style="margin-top: 10px; width: 100%; font-size: 12px; padding: 6px; background-color: #607d8b; color: white; border: none; border-radius: 4px; cursor: pointer;">📂 在文件夹中打开</button>
+                        <p style="margin-top: 10px;">Slide Navigation</p>
+                    </div>
+                    <div class="slide-list" id="slide-list">
+                        <!-- Slide list injected by app.js -->
+                    </div>
+                </div>
+                <div class="preview-main">
+                    <div class="iframe-wrapper">
+                        <iframe id="slide-frame" src="about:blank"></iframe>
+                    </div>
+                    <div class="preview-nav-controls">
+                        <button id="preview-prev-btn" class="nav-btn">
+                            <span>←</span> 上一页
+                        </button>
+                        <span id="preview-page-info" style="font-size: 13px; color: var(--text-secondary); min-width: 60px; text-align: center;">1 / 1</span>
+                        <button id="preview-next-btn" class="nav-btn">
+                            下一页 <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generator View -->
+            <div id="view-generator" class="view-section generator-view">
+                <div class="gen-panel gen-left">
+                    <div class="gen-header">AI 页面生成器</div>
+
+                    <!-- Configuration Section -->
+                    <div class="collapsible">API 配置</div>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label for="apiKey">API Key</label>
+                            <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="baseUrl">Base URL</label>
+                            <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+                        </div>
+                        <div class="form-group">
+                            <label for="modelSelect">模型选择</label>
+                            <select id="modelSelect" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; width: 100%;">
+                                <option value="gpt-5.4">gpt-5.4</option>
+                                <option value="gemini-3-pro-preview" selected>gemini-3-pro-preview</option>
+                                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                                <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+                                <option value="custom">自定义模型...</option>
+                            </select>
+                            <input type="text" id="customModelInput" class="hidden" placeholder="输入模型名称，如 gpt-4-turbo" style="margin-top: 8px; width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <button id="testConnectBtn" class="btn-secondary" style="width: 100%; margin-top: 4px; padding: 6px; font-size: 13px;">🔌 测试连通性</button>
+                            <div id="connectStatus" style="font-size: 12px; margin-top: 4px; display: none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="systemPrompt">系统提示词 (风格约束)</label>
+                            <textarea id="systemPrompt" rows="6" style="font-size: 12px;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Input Section -->
+                    <div class="form-group">
+                        <label for="userPrompt">页面描述 / 提示词</label>
+                        <textarea id="userPrompt" placeholder="描述你想要生成的 PPT 页面内容，例如：'创建一个关于 AI 安全风险的对比图表...'"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imageInput">参考图片 (可选)</label>
+                        <input type="file" id="imageInput" accept="image/*">
+                        <small style="color: #7f8c8d; display: block; margin-top: 5px;">上传图片以复现布局或内容</small>
+                        <div id="imagePreview" style="margin-top: 10px; max-width: 100%; display: none; border-radius: 4px; overflow: hidden; border: 1px solid #ddd;">
+                            <img src="" alt="Preview" style="width: 100%; display: block;">
+                            <button id="clearImageBtn" style="width: 100%; padding: 4px; background: #f8f9fa; border: none; border-top: 1px solid #ddd; cursor: pointer; color: #666; font-size: 12px;">✕ 清除图片</button>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <button id="generateBtn" class="btn-primary">
+                        <span class="btn-text">✨ 生成页面</span>
+                        <div class="btn-spinner"></div>
+                    </button>
+                    
+                    <div id="statusMsg"></div>
+                </div>
+
+                <div class="gen-panel gen-right">
+                    <div class="preview-container">
+                        <iframe id="previewFrame"></iframe>
+                        <!-- Loading Overlay -->
+                        <div id="gen-loader" class="loader-overlay hidden">
+                            <div class="spinner"></div>
+                            <div class="loader-text">AI 正在思考与构建页面...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-bar">
+                        <div style="display: flex; gap: 12px; align-items: center; flex: 1;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                                <div style="display: flex; gap: 8px;">
+                                    <select id="saveProjectSelect" style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; flex: 1;">
+                                        <option value="">加载中...</option>
+                                    </select>
+                                    <input type="text" id="newProjectName" class="hidden" placeholder="新项目名称" style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; flex: 1;">
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <label for="fileName" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">文件名:</label>
+                                    <input type="text" id="fileName" value="new_slide.html" placeholder="例如: 04_conclusion.html" style="padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; flex: 1; font-size: 12px;">
+                                </div>
+                            </div>
+                        </div>
+                        <button id="openInBrowserBtn" class="btn-secondary" disabled style="margin-left: 12px; background-color: #3498db; color: white;">🌐 在浏览器打开</button>
+                        <button id="saveBtn" class="btn-success" disabled style="margin-left: 12px;">💾 保存文件</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Presentation Controls (Floating) -->
+    <div id="present-controls" class="presentation-controls hidden">
+        <button class="control-btn" id="exit-present-btn" title="退出演示">✕</button>
+        <button class="control-btn" id="prev-btn" title="上一页">←</button>
+        <span class="page-info" id="page-info">1 / 10</span>
+        <button class="control-btn" id="next-btn" title="下一页">→</button>
+        <button class="control-btn" id="nav-present" title="全屏">⛶</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/app.js"></script>
+    <!-- We load generator.js but we might need to tweak it to not run immediately or be careful -->
+    <script src="assets/js/generator.js"></script>
+    
+    <script>
+        // Collapsible logic for Generator
+        document.addEventListener('DOMContentLoaded', () => {
+            var coll = document.getElementsByClassName("collapsible");
+            for (var i = 0; i < coll.length; i++) {
+                coll[i].addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    var content = this.nextElementSibling;
+                    if (content.style.maxHeight){
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } 
+                });
+            }
+        });
+    </script>
+</body>
+</html>

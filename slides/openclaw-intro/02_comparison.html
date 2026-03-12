@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI系统架构能力对比表（精简版）</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --panel:#ffffff;
+      --line:rgba(0,0,0,.08);
+      --line-strong:rgba(0,0,0,.12);
+      --text:#1e293b;
+      --muted:#64748b;
+      --good:#22c55e;
+      --mid:#eab308;
+      --bad:#94a3b8;
+      --shadow:0 1.5vh 5vh rgba(0,0,0,.1);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      background-color: #f5f8f5;
+      color:var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 96vw;
+      aspect-ratio: 16/8; /* 2:1 Ratio for PPT */
+      max-height: 96vh;
+      background:
+        radial-gradient(120vh 50vh at 10% -10%, rgba(59,130,246,.08), transparent 55%),
+        radial-gradient(90vh 40vh at 100% 0%, rgba(16,185,129,.08), transparent 55%),
+        linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 3vh 3vw;
+      border-radius: 2vh;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:2vw;
+      margin-bottom:2vh;
+      flex-shrink: 0;
+    }
+
+    .title-wrap{max-width:70vw}
+
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:0.5vw;
+      font-size:1.4vh;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#64748b;
+      padding:0.7vh 1vw;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:999px;
+      background:rgba(0,0,0,.04);
+      margin-bottom:1vh;
+    }
+
+    h1{
+      margin:0;
+      font-size:4vh;
+      line-height:1.12;
+      letter-spacing:.01em;
+      font-weight:800;
+      color:#0f172a;
+    }
+
+    .subtitle{
+      margin-top:1vh;
+      color:var(--muted);
+      font-size:1.8vh;
+      line-height:1.45;
+      max-width:65vw;
+    }
+
+    .legend{
+      display:flex;
+      gap:1vw;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      width: 20vw;
+      padding-top:0.5vh;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:0.5vw;
+      padding:0.8vh 1vw;
+      border-radius:1vh;
+      background:rgba(0,0,0,.04);
+      border:1px solid rgba(0,0,0,.06);
+      color:#475569;
+      font-size:1.4vh;
+      white-space:nowrap;
+    }
+
+    .dot{
+      width:1vh;height:1vh;border-radius:50%;
+      display:inline-block;
+    }
+    .good{background:var(--good)}
+    .mid{background:var(--mid)}
+    .bad{background:var(--bad)}
+
+    .table-card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, #ffffff, #f8fafc);
+      border-radius:2vh;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    table{
+      width:100%;
+      height: 100%;
+      border-collapse:separate;
+      border-spacing:0;
+      table-layout:fixed;
+    }
+
+    thead th{
+      background:linear-gradient(180deg, rgba(59,130,246,.08), rgba(59,130,246,.02));
+      color:#0f172a;
+      font-size:1.8vh;
+      font-weight:800;
+      padding:1.5vh 1vw;
+      border-bottom:1px solid var(--line-strong);
+      text-align:center;
+    }
+
+    thead th:first-child{
+      text-align:left;
+      padding-left:2vw;
+      width:18vw;
+    }
+
+    tbody td{
+      padding:1vh 1vw;
+      border-bottom:1px solid var(--line);
+      border-right:1px solid rgba(0,0,0,.06);
+      vertical-align:middle;
+      text-align:center;
+      font-size:1.7vh;
+      color:#334155;
+    }
+
+    tbody tr:last-child td{border-bottom:none}
+    tbody td:first-child{
+      text-align:left;
+      padding-left:2vw;
+      background:linear-gradient(90deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
+      font-weight:800;
+      color:#0f172a;
+      font-size:1.8vh;
+    }
+    tbody tr:nth-child(even) td{
+      background-color:rgba(0,0,0,.02);
+    }
+
+    .product{
+      display:flex;
+      flex-direction:column;
+      gap:0.5vh;
+      align-items:center;
+      justify-content:center;
+    }
+    .product .name{
+      font-size:2vh;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+    .product .role{
+      font-size:1.2vh;
+      line-height:1.35;
+      color:#475569;
+      padding:0.4vh 0.8vw;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:999px;
+      background:rgba(0,0,0,.04);
+      max-width:12vw;
+    }
+
+    .mark{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:3vh;height:3vh;
+      border-radius:0.8vh;
+      font-weight:800;
+      font-size:1.8vh;
+    }
+    .yes{
+      color:#f0fdf4;
+      background:var(--good);
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);
+    }
+    .partial{
+      color:#fefce8;
+      background:var(--mid);
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);
+    }
+    .no{
+      color:#64748b;
+      background:rgba(0,0,0,.06);
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+    }
+
+    .footer{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:1.5vw;
+      margin-top:1.5vh;
+      flex-shrink: 0;
+    }
+
+    .note, .takeaway{
+      background:rgba(0,0,0,.04);
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:1.5vh;
+      padding:1.2vh 1.5vw;
+    }
+
+    .note-title, .takeaway-title{
+      font-size:1.4vh;
+      font-weight:800;
+      color:#1e293b;
+      margin-bottom:0.8vh;
+      letter-spacing:.02em;
+    }
+
+    .note p, .takeaway p{
+      margin:0;
+      color:#475569;
+      line-height:1.55;
+      font-size:1.5vh;
+    }
+
+    .takeaway p strong{color:#0f172a}
+
+    .brand-chatgpt{color:#0284c7}
+    .brand-openclaw{color:#7c3aed}
+    .brand-manus{color:#16a34a}
+    .brand-dify{color:#db2777}
+    .brand-llm{color:#475569}
+
+    .corner{
+      position:absolute;
+      right:2vw;
+      bottom:1vh;
+      font-size:1.2vh;
+      color:#64748b;
+      letter-spacing:.02em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="title-wrap">
+        <div class="kicker">Architecture Comparison</div>
+        <h1>语言模型、ChatGPT、OpenClaw、Manus、Dify 的功能形态对比</h1>
+        <div class="subtitle">
+          采用更粗粒度的能力维度，突出“底层模型、对话产品、通用 Agent、AI 应用平台”之间的层次差异。
+        </div>
+      </div>
+      <div class="legend">
+        <div class="tag"><span class="dot good"></span> 支持</div>
+        <div class="tag"><span class="dot mid"></span> 部分支持</div>
+        <div class="tag"><span class="dot bad"></span> 非核心</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>核心能力</th>
+            <th>
+              <div class="product">
+                <div class="name brand-llm">语言模型</div>
+                <div class="role">底层模型</div>
+              </div>
+            </th>
+            <th>
+              <div class="product">
+                <div class="name brand-chatgpt">ChatGPT</div>
+                <div class="role">对话产品</div>
+              </div>
+            </th>
+            <th>
+              <div class="product">
+                <div class="name brand-openclaw">OpenClaw</div>
+                <div class="role">Agent Runtime</div>
+              </div>
+            </th>
+            <th>
+              <div class="product">
+                <div class="name brand-manus">Manus</div>
+                <div class="role">行动型 Agent</div>
+              </div>
+            </th>
+            <th>
+              <div class="product">
+                <div class="name brand-dify">Dify</div>
+                <div class="role">AI 应用平台</div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>自然语言理解与生成</td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+          </tr>
+
+          <tr>
+            <td>多轮对话与用户交互</td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+          </tr>
+
+          <tr>
+            <td>工具调用与外部系统执行</td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+          </tr>
+
+          <tr>
+            <td>自主任务规划与连续行动</td>
+            <td><span class="mark no">—</span></td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark partial">△</span></td>
+          </tr>
+
+          <tr>
+            <td>记忆、状态与上下文管理</td>
+            <td><span class="mark no">—</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark partial">△</span></td>
+          </tr>
+
+          <tr>
+            <td>可扩展生态（Tools / Skills / 插件）</td>
+            <td><span class="mark no">—</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark yes">✓</span></td>
+          </tr>
+
+          <tr>
+            <td>平台化部署与应用编排</td>
+            <td><span class="mark no">—</span></td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark yes">✓</span></td>
+            <td><span class="mark partial">△</span></td>
+            <td><span class="mark yes">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div class="note">
+        <div class="note-title">汇报时可强调</div>
+        <p>它们并不在同一层竞争。语言模型提供生成能力，ChatGPT提供产品化入口，OpenClaw 与 Manus 更强调行动能力，Dify 更强调平台化搭建。</p>
+      </div>
+      <div class="takeaway">
+        <div class="takeaway-title">一句话结论</div>
+        <p><strong>系统正从“能回答”逐步演化到“能行动”，再到“能集成与编排”。</strong></p>
+      </div>
+    </div>
+
+    <div class="corner">OpenClaw Architecture Comparison - PPT 16:8</div>
+  </div>
+</body>
+</html>

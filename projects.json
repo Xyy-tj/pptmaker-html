@@ -1,0 +1,14 @@
+{
+    "projects": [
+        {
+            "id": "openclaw-intro",
+            "name": "OpenClaw 架构介绍",
+            "description": "2026.3 组会分享",
+            "slides": [
+                { "title": "系统定位与核心架构", "path": "slides/openclaw-intro/01_intro.html" },
+                { "title": "AI 架构对比", "path": "slides/openclaw-intro/02_comparison.html" },
+                { "title": "安全挑战：爆炸半径", "path": "slides/openclaw-intro/03_blast_radius.html" }
+            ]
+        }
+    ]
+}

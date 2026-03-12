@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 系统定位与核心架构</title>
+    <style>
+        :root {
+            --primary-bg: #f5f8f5; /* Light green-grey base */
+            --panel-bg: #ebf1eb; /* Slightly darker panel bg */
+            --border-color: #d1d9d1; /* Soft grey border */
+            --accent-green: #4caf50; /* Vibrant green for open/dynamic */
+            --accent-blue: #2196f3; /* Clear blue for fixed/static */
+            --cloud-grey: #9e9e9e; /* Dull grey for cloud-centric */
+            --text-dark: #333;
+            --text-light: #fff;
+            --main-font: "Microsoft YaHei", "微软雅黑", sans-serif;
+            --shadow-subtle: 0 0.5vh 1vh rgba(0,0,0,0.1);
+            --shadow-accent: 0 1vh 2vh rgba(0,0,0,0.2);
+        }
+
+        body {
+            font-family: var(--main-font);
+            margin: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 96vw;
+            aspect-ratio: 16/8; /* 2:1 Ratio for PPT */
+            max-height: 96vh;
+            background: #fff;
+            padding: 2vh 2vw;
+            border-radius: 2vh;
+            box-shadow: 0 2vh 6vh rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            margin: auto;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 5vh; /* Large title for PPT */
+            font-weight: bold;
+            color: #1a1a1a;
+            margin: 0 0 2.5vh 0;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        .body-content {
+            display: flex;
+            gap: 2vw;
+            flex: 1;
+            min-height: 0; /* Allow flex children to shrink */
+        }
+
+        /* --- Left Panel: Positioning & Core Advantages --- */
+        .left-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-radius: 1.5vh;
+            padding: 2vh;
+            border: 1px solid var(--border-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .panel-divider {
+            position: absolute;
+            top: 2vh;
+            bottom: 2vh;
+            right: 0;
+            width: 1px;
+            background: repeating-linear-gradient(to bottom, var(--border-color) 0, var(--border-color) 1vh, transparent 1vh, transparent 2vh);
+            z-index: 1;
+        }
+
+        .position-section {
+            margin-bottom: 1.5vh;
+            flex: 0 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5vh;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1.5vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .compare-row {
+            display: flex;
+            align-items: stretch;
+            gap: 1vw;
+        }
+
+        .compare-box {
+            flex: 1;
+            padding: 1.5vh;
+            border-radius: 1vh;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 8vh;
+        }
+
+        .cloud-box {
+            background-color: #f0f0f0;
+            border: 1px dashed #bbb;
+        }
+
+        .sovereign-box {
+            background-color: #dcedc8;
+            border: 2px solid var(--accent-green);
+        }
+
+        .cloud-icon-container, .server-icon-container {
+            font-size: 4vh;
+            margin-bottom: 0.5vh;
+            color: var(--cloud-grey);
+            position: relative;
+            line-height: 1;
+        }
+
+        .cloud-icon-container .x-mark {
+            position: absolute;
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 3vh;
+            top: -1vh;
+            right: -1vh;
+        }
+
+        .server-icon-container {
+            color: var(--accent-green);
+        }
+
+        .sovereign-box .server-icon-container .lock-icon {
+            position: absolute;
+            color: #33691e;
+            font-size: 2vh;
+            bottom: -0.5vh;
+            right: -1vh;
+        }
+
+        .label-text {
+            font-size: 1.8vh;
+            color: #555;
+            margin-bottom: 0.5vh;
+            font-weight: bold;
+        }
+
+        .conclusion-text {
+            font-size: 1.8vh;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .conclusion-text.sovereign {
+            color: #1b5e20;
+        }
+
+        .vs-divider {
+            color: #bbb;
+            font-weight: bold;
+            margin: 0 0.5vw;
+            font-size: 2vh;
+            align-self: center;
+        }
+
+        /* decision mode icons */
+        .fixed-box {
+            background-color: #e3f2fd;
+            border: 1px dashed var(--accent-blue);
+        }
+        
+        .agent-box {
+            background-color: #e8f5e9;
+            border: 2px solid var(--accent-green);
+        }
+
+        .fixed-icon, .agent-icon {
+            margin-bottom: 1vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            font-size: 1.6vh;
+        }
+
+        .fixed-icon span {
+            display: inline-block;
+            border: 1px solid var(--accent-blue);
+            background: #fff;
+            padding: 0.5vh 1vh;
+            border-radius: 0.5vh;
+            margin: 0 0.5vh;
+            color: var(--accent-blue);
+        }
+
+        .agent-icon {
+            align-items: center;
+        }
+
+        .agent-node {
+            border: 2px solid var(--accent-green);
+            background: #fff;
+            padding: 0.5vh 1vh;
+            border-radius: 0.5vh;
+            margin: 0 0.5vw;
+            color: var(--accent-green);
+            font-weight: bold;
+            position: relative;
+        }
+
+        .agent-icon .memory-node {
+            background: #a5d6a7;
+            color: #1b5e20;
+        }
+
+        /* function comparison */
+        .copaw-vs-openclaw {
+            background: #fff;
+            border-radius: 1vh;
+            padding: 1.5vh;
+            box-shadow: var(--shadow-subtle);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .comparison-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1vh;
+        }
+
+        .comparison-header {
+            font-weight: bold;
+            color: var(--text-dark);
+            font-size: 2vh;
+        }
+
+        .checklist {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.8vh;
+            flex: 1;
+        }
+
+        .checklist th, .checklist td {
+            text-align: left;
+            padding: 0.8vh 1vh;
+            border-bottom: 1px solid #eee;
+        }
+
+        .checklist th {
+            color: #777;
+        }
+
+        .checklist tr:last-child td {
+            border-bottom: none;
+        }
+
+        .checklist .item-label {
+            width: 35%;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .checklist .status-icon {
+            font-size: 2vh;
+            margin-right: 0.5vh;
+        }
+
+        .status-check { color: #4caf50; }
+        .status-x { color: #d32f2f; }
+        .status-yellow { color: #fbc02d; }
+
+        .copaw-mature, .openclaw-full {
+            font-size: 1.6vh;
+            color: #555;
+            margin-bottom: 1vh;
+            margin-top: 0;
+            line-height: 1.4;
+        }
+        
+        .copaw-mature span, .openclaw-full span {
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        /* --- Right Panel: Runtime Matrix --- */
+        .right-panel {
+            flex: 1.2;
+            background-color: var(--panel-bg);
+            border-radius: 1.5vh;
+            padding: 2vh;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel-title {
+            text-align: center;
+            font-size: 2.5vh;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2vh;
+            margin-top: 0;
+        }
+
+        .runtime-matrix {
+            position: relative;
+            flex: 1;
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 1px;
+            background-color: #fff; /* Line color */
+            border-radius: 1vh;
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        /* matrix headers */
+        .y-axis-label-top, .y-axis-label-bottom {
+            grid-row: 1 / 2;
+            grid-column: 1 / 2;
+            color: #777;
+            font-size: 1.4vh;
+            writing-mode: vertical-rl;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            padding: 1vh 0.5vh;
+        }
+
+        .y-axis-label-bottom {
+            grid-row: 2 / 3;
+            grid-column: 1 / 2;
+        }
+        
+        .x-axis-label-left, .x-axis-label-right {
+            grid-row: 1 / 2;
+            grid-column: 2 / 3;
+            color: #777;
+            font-size: 1.4vh;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5vh;
+        }
+
+        .x-axis-label-right {
+            grid-row: 1 / 2;
+            grid-column: 3 / 4;
+        }
+
+        .y-axis-main {
+            grid-row: 1 / 4;
+            grid-column: 1 / 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .y-axis-line {
+            position: absolute;
+            top: 10%;
+            bottom: 10%;
+            right: 10px;
+            width: 1px;
+            background: repeating-linear-gradient(to bottom, #777 0, #777 5px, transparent 5px, transparent 10px);
+        }
+
+        .x-axis-main {
+            grid-row: 3 / 4;
+            grid-column: 2 / 4;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        .x-axis-line {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: 10px;
+            height: 1px;
+            background: repeating-linear-gradient(to right, #777 0, #777 5px, transparent 5px, transparent 10px);
+        }
+
+        .y-label, .x-label {
+            font-size: 1.8vh;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .y-label.fixed { color: var(--accent-blue); }
+        .y-label.dynamic { color: var(--accent-green); }
+        
+        .x-label { color: #555; }
+        .x-label.self-hosted { color: #1b5e20; }
+
+        /* matrix cells */
+        .quadrant {
+            padding: 1vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--panel-bg);
+            min-height: 0;
+            position: relative;
+        }
+
+        .cell-top-left { grid-row: 2 / 3; grid-column: 2 / 3; }
+        .cell-top-right { grid-row: 2 / 3; grid-column: 3 / 4; border-left: 2px solid #fff; }
+        .cell-bottom-left { grid-row: 3 / 4; grid-column: 2 / 3; border-top: 2px solid #fff; }
+        .cell-bottom-right { grid-row: 3 / 4; grid-column: 3 / 4; border-top: 2px solid #fff; border-left: 2px solid #fff; }
+
+        /* Icon styling */
+        .chatgpt-claude {
+            width: 90%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 1vh;
+        }
+        
+        .chatgpt-logo, .claude-logo {
+            font-size: 3vh;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .logo-label {
+            font-size: 1.6vh;
+            color: #555;
+            text-align: center;
+        }
+
+        .openclaw-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fff;
+            border-radius: 1vh;
+            padding: 1vh;
+            width: 100%;
+            max-width: 80%;
+            margin-bottom: 1vh;
+            box-shadow: var(--shadow-accent);
+            border: 2px solid var(--accent-green);
+        }
+
+        .openclaw-title {
+            font-weight: bold;
+            font-size: 2.2vh;
+            margin-bottom: 0.5vh;
+            color: var(--accent-green);
+        }
+
+        .openclaw-components {
+            font-size: 1.4vh;
+            color: #555;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .openclaw-server-icon, .copaw-server-icon {
+            font-size: 3.5vh;
+            color: var(--accent-green);
+            margin-bottom: 0.5vh;
+            line-height: 1;
+        }
+        
+        .copaw-block {
+            display: flex;
+            align-items: center;
+            gap: 1vh;
+        }
+        
+        .n8n-block {
+            display: flex;
+            align-items: center;
+            gap: 1vh;
+            background: #fff;
+            padding: 1vh 1.5vh;
+            border-radius: 0.5vh;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .n8n-icon {
+            font-size: 3vh;
+            color: #ff9800; /* N8n primary color */
+        }
+        
+        .planned-text {
+            font-style: italic;
+            color: #999;
+            font-size: 1.8vh;
+            text-align: center;
+        }
+
+        .security-docs {
+            display: flex;
+            align-items: center;
+            gap: 0.5vh;
+            font-size: 1.4vh;
+            color: #555;
+            border: 1px solid #ccc;
+            padding: 0.5vh 1vh;
+            border-radius: 2vh;
+            background: #fff;
+            position: absolute;
+            bottom: 1vh;
+            right: 1vh;
+        }
+
+        .security-docs-icon {
+            color: #1b5e20;
+        }
+
+        /* arrows */
+        .arrow-to-openclaw {
+            position: absolute;
+            color: #aaa;
+            font-size: 3vh;
+        }
+        
+        .arrow-from-claude {
+            top: -2vh;
+            right: -2vh;
+            transform: rotate(-10deg);
+        }
+
+        .arrow-from-copaw {
+            position: absolute;
+            top: -2vh;
+            left: 2vh;
+            color: #aaa;
+            font-size: 3vh;
+            transform: rotate(-10deg);
+        }
+
+        /* matrix cell arrow labels */
+        .copaw-label {
+            font-weight: bold;
+            color: var(--text-dark);
+            font-size: 1.8vh;
+        }
+        
+        .copaw-maturity {
+            font-size: 1.4vh;
+            color: #777;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">OpenClaw 系统定位与核心架构</h1>
+
+        <div class="body-content">
+            <div class="left-panel">
+                <div class="panel-divider"></div>
+
+                <div class="position-section">
+                    <h2 class="section-title">核心定位与优势对比</h2>
+                    
+                    <div class="compare-row">
+                        <div class="compare-box cloud-box">
+                            <div class="cloud-icon-container">
+                                ☁️
+                                <div class="x-mark">✕</div>
+                            </div>
+                            <span class="label-text">集中式云端 (Public Cloud)</span>
+                            <span class="conclusion-text">隐私与离线风险</span>
+                        </div>
+                        <span class="vs-divider">VS.</span>
+                        <div class="compare-box sovereign-box">
+                            <div class="server-icon-container">
+                                🖥️
+                                <div class="lock-icon">🔒</div>
+                            </div>
+                            <span class="label-text">自托管主权 (Self-hosted Sovereign)</span>
+                            <span class="conclusion-text sovereign">完全隐私与掌控</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="position-section">
+                    <div class="compare-row">
+                        <div class="compare-box fixed-box">
+                            <div class="fixed-icon">
+                                <span>A</span> → <span>B</span> → <span>C</span>
+                            </div>
+                            <span class="label-text">固定流程 (Fixed Workflow)</span>
+                            <span class="conclusion-text">静态、线性控制</span>
+                        </div>
+                        <span class="vs-divider">VS.</span>
+                        <div class="compare-box agent-box">
+                            <div class="agent-icon">
+                                <span class="agent-node">A</span>
+                                <span class="agent-node memory-node">Memory</span>
+                                <span class="agent-node">B</span>
+                            </div>
+                            <span class="label-text">动态代理 (Agent Runtime)</span>
+                            <span class="conclusion-text">开放、动态、有记忆</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="copaw-vs-openclaw">
+                    <div class="comparison-top">
+                        <span class="comparison-header">功能集与成熟度</span>
+                    </div>
+                    
+                    <p class="copaw-mature">CoPaw: 早期版本，专注<span>接入与会话</span>，快速演进。</p>
+                    <p class="openclaw-full">OpenClaw: 成熟框架，提供<span>端到端核心套件</span>。</p>
+                    
+                    <table class="checklist">
+                        <thead>
+                            <tr>
+                                <th>功能项目</th>
+                                <th>CoPaw</th>
+                                <th>OpenClaw</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="item-label">[多通道接入]</td>
+                                <td><span class="status-icon status-check">✓</span>基础支持</td>
+                                <td><span class="status-icon status-check">✓</span>完整网关</td>
+                            </tr>
+                            <tr>
+                                <td class="item-label">[会话管理]</td>
+                                <td><span class="status-icon status-check">✓</span>基础支持</td>
+                                <td><span class="status-icon status-check">✓</span>完整套件</td>
+                            </tr>
+                            <tr>
+                                <td class="item-label">[知识库/记忆]</td>
+                                <td><span class="status-icon status-yellow">⚠</span>演进中</td>
+                                <td><span class="status-icon status-check">✓</span>完整记忆</td>
+                            </tr>
+                            <tr>
+                                <td class="item-label">[技能集]</td>
+                                <td><span class="status-icon status-x">✕</span>不完整</td>
+                                <td><span class="status-icon status-check">✓</span>完整技能</td>
+                            </tr>
+                            <tr>
+                                <td class="item-label">[安全文档体系]</td>
+                                <td><span class="status-icon status-x">✕</span>缺失</td>
+                                <td><span class="status-icon status-check">✓</span>完整文档</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="right-panel">
+                <h2 class="right-panel-title">核心运行架构与部署</h2>
+                
+                <div class="runtime-matrix">
+                    <div class="y-axis-label-top"><span class="y-label dynamic">动态代理环境</span></div>
+                    <div class="y-axis-label-bottom"><span class="y-label fixed">静态工作流</span></div>
+                    
+                    <div class="x-axis-label-left"><span class="x-label">托管 (Managed)</span></div>
+                    <div class="x-axis-label-right"><span class="x-label self-hosted">自托管 (Self-hosted)</span></div>
+
+                    <div class="quadrant cell-top-left">
+                        <div class="chatgpt-claude">
+                            <span class="chatgpt-logo">ChatGPT</span>
+                            <span class="claude-logo">Claude</span>
+                        </div>
+                        <div class="logo-label">服务接入</div>
+                    </div>
+                    
+                    <div class="quadrant cell-top-right">
+                        <div class="openclaw-server-icon">🖥️</div>
+                        <div class="openclaw-block">
+                            <div class="openclaw-title">OpenClaw</div>
+                            <div class="openclaw-components">
+                                Gateway / Sessions /<br>
+                                Memory / Skills
+                            </div>
+                        </div>
+                        <div class="copaw-block">
+                            <div class="copaw-server-icon">🖥️</div>
+                            <div class="copaw-details">
+                                <div class="copaw-label">CoPaw</div>
+                                <div class="copaw-maturity">专注于核心会话接入</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow-to-openclaw arrow-from-copaw">⤴️</div>
+                        <div class="security-docs">
+                            <span class="security-docs-icon">🛡️</span> Security Docs
+                        </div>
+                    </div>
+                    
+                    <div class="quadrant cell-bottom-left">
+                        <div class="planned-text">未来规划<br>(Zapier等)</div>
+                    </div>
+                    
+                    <div class="quadrant cell-bottom-right">
+                        <div class="n8n-block">
+                            <span class="n8n-icon">🔗</span>
+                            n8n
+                        </div>
+                        <div class="logo-label">自托管流程自动化</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

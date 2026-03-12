@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 代理的安全挑战：爆炸半径</title>
+    <style>
+        :root {
+            --primary-bg: #f5f8f5;
+            --panel-bg: #ffffff;
+            --border-color: #d1d9d1;
+            --danger-red: #e53935;
+            --danger-light: #ffcdd2;
+            --text-dark: #333;
+            --text-muted: #666;
+            --main-font: "Microsoft YaHei", "微软雅黑", sans-serif;
+            --shadow-card: 0 0.5vh 2vh rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: var(--main-font);
+            margin: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 96vw;
+            aspect-ratio: 16/8;
+            max-height: 96vh;
+            background: #fff;
+            padding: 3vh 4vw;
+            border-radius: 2vh;
+            box-shadow: 0 2vh 6vh rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            margin: auto;
+            position: relative;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 6vh;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin: 0 0 5vh 0;
+            z-index: 10;
+        }
+
+        .diagram-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 4vh;
+        }
+
+        /* Blast Radius Visuals */
+        .blast-core {
+            width: 12vh;
+            height: 12vh;
+            background-color: var(--danger-red);
+            border-radius: 50%;
+            z-index: 5;
+            box-shadow: 0 0 3vh rgba(229, 57, 53, 0.6);
+            position: relative;
+        }
+
+        .blast-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: var(--danger-red);
+            opacity: 0.15;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+
+        .ripple-1 { width: 25vh; height: 25vh; opacity: 0.4; }
+        .ripple-2 { width: 45vh; height: 45vh; opacity: 0.25; }
+        .ripple-3 { width: 65vh; height: 65vh; opacity: 0.1; }
+        .ripple-4 { width: 85vh; height: 85vh; opacity: 0.05; }
+
+        /* Connector Lines */
+        .connector-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .connector-lines line {
+            stroke: #b71c1c;
+            stroke-width: 0.6vh;
+        }
+
+        /* Capability Cards */
+        .card {
+            position: absolute;
+            background: white;
+            border: 2px solid var(--border-color);
+            padding: 2.5vh 2.5vw;
+            border-radius: 1.5vh;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 22vw;
+            z-index: 6;
+        }
+
+        .card-icon {
+            width: 7vh;
+            height: 7vh;
+            margin-bottom: 1.5vh;
+        }
+        
+        .card-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #1565c0; /* Blueish for icons as in image */
+        }
+
+        .card-text {
+            font-size: 3.2vh;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        /* Card Positioning */
+        .card-tl { top: 2%; left: 2%; }
+        .card-tr { top: 2%; right: 2%; }
+        .card-bl { bottom: 12%; left: 2%; }
+        .card-br { bottom: 12%; right: 2%; }
+
+        /* Footer Quote */
+        .footer-quote {
+            font-size: 3vh;
+            line-height: 1.5;
+            color: #1a1a1a;
+            text-align: left;
+            background: #fafafa;
+            padding: 2.5vh;
+            border-left: 1vh solid var(--danger-red);
+            margin-top: auto;
+            font-weight: 500;
+        }
+
+        .highlight-red {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- <div class="main-title">AI 代理的安全挑战：爆炸半径</div> -->
+        
+        <div class="diagram-area">
+            <!-- Ripples -->
+            <div class="blast-ripple ripple-4"></div>
+            <div class="blast-ripple ripple-3"></div>
+            <div class="blast-ripple ripple-2"></div>
+            <div class="blast-ripple ripple-1"></div>
+            <div class="blast-core"></div>
+
+            <!-- SVG Lines connecting center to cards -->
+            <svg class="connector-lines">
+                <!-- Top Left to Center -->
+                <line x1="15%" y1="15%" x2="50%" y2="50%" />
+                <!-- Top Right to Center -->
+                <line x1="85%" y1="15%" x2="50%" y2="50%" />
+                <!-- Bottom Left to Center -->
+                <line x1="15%" y1="75%" x2="50%" y2="50%" />
+                <!-- Bottom Right to Center -->
+                <line x1="85%" y1="75%" x2="50%" y2="50%" />
+            </svg>
+
+            <!-- Cards -->
+            <div class="card card-tl">
+                <div class="card-icon">
+                    <!-- Door Icon -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0v18H5V5h7zm2 9h2v2h-2v-2z" fill="#2980b9"/>
+                        <path d="M15 12l4-4v3h2v2h-2v3l-4-4z" fill="#c0392b"/> <!-- Arrow -->
+                    </svg>
+                </div>
+                <div class="card-text">接入真实通道</div>
+            </div>
+
+            <div class="card card-tr">
+                <div class="card-icon">
+                    <!-- Timeline/State Icon -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 17h18v2H3zm0-7h18v5H3zm0-4h18v2H3z" fill="#2980b9"/>
+                        <circle cx="7" cy="6" r="1" fill="#e74c3c"/>
+                        <circle cx="12" cy="6" r="1" fill="#e74c3c"/>
+                        <circle cx="17" cy="6" r="1" fill="#e74c3c"/>
+                    </svg>
+                </div>
+                <div class="card-text">掌握长期状态</div>
+            </div>
+
+            <div class="card card-bl">
+                <div class="card-icon">
+                    <!-- Gear/Tool Icon -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" fill="#c0392b"/>
+                        <path d="M12 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" fill="#2980b9"/>
+                    </svg>
+                </div>
+                <div class="card-text">调用本地工具</div>
+            </div>
+
+            <div class="card card-br">
+                <div class="card-icon">
+                    <!-- Browser/Device Icon -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z" fill="#2980b9"/>
+                        <rect x="16" y="10" width="3" height="4" rx="1" fill="#c0392b"/>
+                    </svg>
+                </div>
+                <div class="card-text">操作浏览器与设备</div>
+            </div>
+        </div>
+
+        <div class="footer-quote">
+            助理的能力越强，一旦它被坏人控制或犯了错，能造成的破坏（<span class="highlight-red">爆炸半径</span>）就越大。因此，
+            安全绝对不能是“功能做完后再打的补丁”，必须从一开始就融入系统里。
+        </div>
+    </div>
+</body>
+</html>
