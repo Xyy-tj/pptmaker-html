@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac"
   },
   "author": "zhaoy",
   "license": "ISC",
@@ -21,6 +22,10 @@
       "target": "nsis",
       "verifyUpdateCodeSignature": false,
       "signAndEditExecutable": false
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
     },
     "nsis": {
       "oneClick": false,

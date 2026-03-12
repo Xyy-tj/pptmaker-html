@@ -32,6 +32,8 @@ class SlideGenerator {
     }
 
     getDefaultSystemPrompt() {
+        if (window.DEFAULT_SYSTEM_PROMPT) return window.DEFAULT_SYSTEM_PROMPT;
+        
         return `你是一位擅长信息设计、PPT页面重构、学术汇报可视化与前端排版的资深设计师兼前端工程师。
 
 我会给你一张 png 格式的页面草稿图。你的任务不是机械复刻，而是：

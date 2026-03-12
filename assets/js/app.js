@@ -470,7 +470,7 @@ function initSettings() {
     // Load defaults
     if (settingApiKey) settingApiKey.value = localStorage.getItem('openai_api_key') || '';
     if (settingBaseUrl) settingBaseUrl.value = localStorage.getItem('openai_base_url') || 'https://api.openai.com/v1';
-    if (settingSystemPrompt) settingSystemPrompt.value = localStorage.getItem('system_prompt') || ''; 
+    if (settingSystemPrompt) settingSystemPrompt.value = localStorage.getItem('system_prompt') || (window.DEFAULT_SYSTEM_PROMPT || ''); 
 
     // Load Model Settings
     const savedModel = localStorage.getItem('openai_model') || 'gemini-3-pro-preview';
